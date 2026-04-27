@@ -23,10 +23,6 @@
                 <behavior>Edit</behavior>
                 <field>Title</field>
             </layoutItems>
-            <layoutItems>
-                <behavior>Edit</behavior>
-                <field>VIP__c</field>
-            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
@@ -131,9 +127,27 @@
         <detailHeading>true</detailHeading>
         <editHeading>false</editHeading>
         <label>Custom Links</label>
-        <layoutColumns/>
-        <layoutColumns/>
-        <layoutColumns/>
+        <layoutColumns>
+            <layoutItems>
+                <customLink>GoogleSearch</customLink>
+            </layoutItems>
+            <layoutItems>
+                <customLink>GoogleNews</customLink>
+            </layoutItems>
+        </layoutColumns>
+        <layoutColumns>
+            <layoutItems>
+                <customLink>GoogleMaps</customLink>
+            </layoutItems>
+            <layoutItems>
+                <customLink>HooversProfile</customLink>
+            </layoutItems>
+        </layoutColumns>
+        <layoutColumns>
+            <layoutItems>
+                <customLink>SendGmail</customLink>
+            </layoutItems>
+        </layoutColumns>
         <style>CustomLinks</style>
     </layoutSections>
     <quickActionList>
@@ -144,10 +158,31 @@
             <quickActionName>FeedItem.ContentPost</quickActionName>
         </quickActionListItems>
         <quickActionListItems>
+            <quickActionName>NewTask</quickActionName>
+        </quickActionListItems>
+        <quickActionListItems>
+            <quickActionName>LogACall</quickActionName>
+        </quickActionListItems>
+        <quickActionListItems>
+            <quickActionName>NewCase</quickActionName>
+        </quickActionListItems>
+        <quickActionListItems>
+            <quickActionName>NewNote</quickActionName>
+        </quickActionListItems>
+        <quickActionListItems>
+            <quickActionName>NewEvent</quickActionName>
+        </quickActionListItems>
+        <quickActionListItems>
+            <quickActionName>FeedItem.RypplePost</quickActionName>
+        </quickActionListItems>
+        <quickActionListItems>
             <quickActionName>FeedItem.LinkPost</quickActionName>
         </quickActionListItems>
         <quickActionListItems>
             <quickActionName>FeedItem.PollPost</quickActionName>
+        </quickActionListItems>
+        <quickActionListItems>
+            <quickActionName>FeedItem.QuestionPost</quickActionName>
         </quickActionListItems>
         <quickActionListItems>
             <quickActionName>SendEmail</quickActionName>
@@ -197,8 +232,8 @@
     </relatedLists>
     <runAssignmentRulesDefault>false</runAssignmentRulesDefault>
     <showEmailCheckbox>false</showEmailCheckbox>
-    <showHighlightsPanel>true</showHighlightsPanel>
-    <showInteractionLogPanel>true</showInteractionLogPanel>
+    <showHighlightsPanel>false</showHighlightsPanel>
+    <showInteractionLogPanel>false</showInteractionLogPanel>
     <showRunAssignmentRulesCheckbox>true</showRunAssignmentRulesCheckbox>
     <showSubmitAndAttachButton>false</showSubmitAndAttachButton>
 </Layout>
