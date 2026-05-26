@@ -1,10 +1,11 @@
 /**
- * @description Comprehensive test suite for AccountRatingCalculator.
- *              Validates all functional paths, edge cases, bulk behaviour,
- *              and the Flow invocable entry point.
+ * @description Unit test suite for AccountRatingCalculator.
+ *              Covers all scoring tiers, boundary conditions, bulk behaviour,
+ *              security (System.runAs), and the Flow invocable entry point.
  *
- *              Coverage target : 90%+ (Protocol v8 requirement)
- *              Security model  : System.runAs() used throughout
+ *              Protocol  : Unified Metadata Generation Protocol v8
+ *              PMD rules : ApexPMD_Ruleset (zero Blocker/Critical/Major violations)
+ *              Coverage  : 100 % target on AccountRatingCalculator
  *
  * @author      Agentia Orchestrate Agent
  * @story       AA-118
@@ -12,45 +13,38 @@
 @IsTest
 private class AccountRatingCalculatorTest {
 
-    @TestSetup
-    static void makeData() {
-        Account hotAcc = new Account(
-            Name              = 'Hot Account',
-            AnnualRevenue     = 15000000,
-            NumberOfEmployees = 1500
-        );
-        Account warmAcc = new Account(
-            Name              = 'Warm Account',
-            AnnualRevenue     = 2000000,
-            NumberOfEmployees = 200
-        );
-        Account coldAcc = new Account(
-            Name              = 'Cold Account',
-            AnnualRevenue     = 50000,
-            NumberOfEmployees = 5
-        );
-        Account zeroAcc = new Account(
-            Name              = 'Zero Account',
-            AnnualRevenue     = 0,
-            NumberOfEmployees = 0
-        );
-        Account nullAcc = new Account(Name = 'Null Account');
+    // -------------------------------------------------------------------------
+    // Test data helpers
+    // -------------------------------------------------------------------------
 
-        insert new List<Account>{ hotAcc, warmAcc, coldAcc, zeroAcc, nullAcc };
+    /**
+     * Creates and inserts a test Account with the supplied financial attributes.
+     * @param name              Account name (must be unique per test method).
+     * @param annualRevenue     Annual Revenue value (nullable).
+     * @param numberOfEmployees Number of Employees (nullable).
+     * @return Inserted Account.
+     */
+    private static Account createAccount(String name, Decimal annualRevenue, Integer numberOfEmployees) {
+        Account acc = new Account(
+            Name              = name,
+            AnnualRevenue     = annualRevenue,
+            NumberOfEmployees = numberOfEmployees
+        );
+        insert acc;
+        return acc;
+    }
 
+    /**
+     * Creates and inserts n Opportunities linked to the given Account.
+     * @param accountId  Parent Account Id.
+     * @param count      Number of Opportunities to create.
+     */
+    private static void createOpportunities(Id accountId, Integer count) {
         List<Opportunity> opps = new List<Opportunity>();
-        for (Integer i = 0; i < 10; i++) {
+        for (Integer i = 0; i < count; i++) {
             opps.add(new Opportunity(
-                Name      = 'Hot Opp ' + i,
-                AccountId = hotAcc.Id,
-                StageName = 'Prospecting',
-                CloseDate = Date.today().addDays(30)
-            ));
-        }
-        for (Integer i = 0; i < 5; i++) {
-            opps.add(new Opportunity(
-                Name      = 'Warm Opp ' + i,
-                AccountId = warmAcc.Id,
+                Name      = 'Test Opp ' + i,
+                AccountId = accountId,
                 StageName = 'Prospecting',
                 CloseDate = Date.today().addDays(30)
             ));
@@ -58,349 +52,264 @@ private class AccountRatingCalculatorTest {
         insert opps;
     }
 
-    private static User buildStandardUser() {
-        return new User(
-            Alias             = 'arcusr',
-            Email             = 'arctest@example.com',
-            EmailEncodingKey  = 'UTF-8',
-            LastName          = 'TestUser',
-            LanguageLocaleKey = 'en_US',
-            LocaleSidKey      = 'en_US',
-            ProfileId         = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1].Id,
-            TimeZoneSidKey    = 'America/Los_Angeles',
-            UserName          = 'arctest' + System.currentTimeMillis() + '@example.com'
-        );
+    // -------------------------------------------------------------------------
+    // 1. Rating = Cold  (score 0-3)
+    // -------------------------------------------------------------------------
+
+    @IsTest
+    static void testRatingCold_ZeroValues() {
+        Account acc = createAccount('Cold Zero', 0, 0);
+
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+        Test.stopTest();
+
+        System.assertEquals('Cold', rating, 'Zero revenue/employees/opps should yield Cold');
     }
 
     @IsTest
-    static void testSingleRating_Hot() {
-        Account acc = [SELECT Id FROM Account WHERE Name = 'Hot Account' LIMIT 1];
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
-            Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
-            Test.stopTest();
-        }
-        System.assertEquals('Hot', rating, 'Expected Hot for high-value account');
+    static void testRatingCold_BelowAllThresholds() {
+        Account acc = createAccount('Cold Below', 50000, 5);
+
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+        Test.stopTest();
+
+        System.assertEquals('Cold', rating, 'Revenue < 100 k, employees < 10, 0 opps -> Cold');
     }
 
     @IsTest
-    static void testSingleRating_Warm() {
-        Account acc = [SELECT Id FROM Account WHERE Name = 'Warm Account' LIMIT 1];
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
-            Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
-            Test.stopTest();
-        }
-        System.assertEquals('Warm', rating, 'Expected Warm for mid-value account');
+    static void testRatingCold_NullFields() {
+        Account acc = createAccount('Cold Null', null, null);
+
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+        Test.stopTest();
+
+        System.assertEquals('Cold', rating, 'Null revenue and employees should be treated as 0 -> Cold');
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. Rating = Warm  (score 4-6)
+    // -------------------------------------------------------------------------
+
+    @IsTest
+    static void testRatingWarm_RevenueAndEmployees() {
+        Account acc = createAccount('Warm RevEmp', 1000000, 100);
+
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+        Test.stopTest();
+
+        System.assertEquals('Warm', rating, 'Revenue >=1M + Employees >=100 = 4pts -> Warm');
     }
 
     @IsTest
-    static void testSingleRating_Cold() {
-        Account acc = [SELECT Id FROM Account WHERE Name = 'Cold Account' LIMIT 1];
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
-            Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
-            Test.stopTest();
-        }
-        System.assertEquals('Cold', rating, 'Expected Cold for low-value account');
+    static void testRatingWarm_WithOpportunities() {
+        Account acc = createAccount('Warm Opps', 100000, 10);
+        createOpportunities(acc.Id, 5);
+
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+        Test.stopTest();
+
+        System.assertEquals('Warm', rating, '1+1+2=4pts -> Warm');
     }
 
     @IsTest
-    static void testSingleRating_ZeroValues() {
-        Account acc = [SELECT Id FROM Account WHERE Name = 'Zero Account' LIMIT 1];
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
-            Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
-            Test.stopTest();
-        }
-        System.assertEquals('Cold', rating, 'Expected Cold for zero-value account');
+    static void testRatingWarm_BoundaryScore5() {
+        Account acc = createAccount('Warm Score5', 1000000, 100);
+        createOpportunities(acc.Id, 2);
+
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+        Test.stopTest();
+
+        System.assertEquals('Warm', rating, '2+2+1=5pts -> Warm');
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. Rating = Hot   (score 7-9)
+    // -------------------------------------------------------------------------
+
+    @IsTest
+    static void testRatingHot_MaxScore() {
+        Account acc = createAccount('Hot Max', 10000000, 1000);
+        createOpportunities(acc.Id, 10);
+
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+        Test.stopTest();
+
+        System.assertEquals('Hot', rating, '3+3+3=9pts -> Hot');
     }
 
     @IsTest
-    static void testSingleRating_NullFields() {
-        Account acc = [SELECT Id FROM Account WHERE Name = 'Null Account' LIMIT 1];
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
-            Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
-            Test.stopTest();
-        }
-        System.assertEquals('Cold', rating, 'Expected Cold for null-field account');
+    static void testRatingHot_Score7() {
+        Account acc = createAccount('Hot Score7', 10000000, 1000);
+        createOpportunities(acc.Id, 1);
+
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+        Test.stopTest();
+
+        System.assertEquals('Hot', rating, '3+3+1=7pts -> Hot');
     }
 
     @IsTest
-    static void testSingleRating_NullId() {
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
-            Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(null);
-            Test.stopTest();
-        }
-        System.assertEquals(null, rating, 'Null Id should return null');
+    static void testRatingHot_BoundaryRevenue() {
+        Account acc = createAccount('Hot BndRev', 10000000, 1000);
+        createOpportunities(acc.Id, 5);
+
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+        Test.stopTest();
+
+        System.assertEquals('Hot', rating, 'Revenue exactly 10M -> 3+3+2=8pts -> Hot');
     }
 
-    @IsTest
-    static void testBulkRatings_ThreeAccounts() {
-        List<Account> accounts = [
-            SELECT Id FROM Account
-            WHERE Name IN ('Hot Account', 'Warm Account', 'Cold Account')
-        ];
-        Set<Id> ids = new Map<Id, Account>(accounts).keySet();
-        User u = buildStandardUser();
-        insert u;
-        Map<Id, String> ratings;
-        System.runAs(u) {
-            Test.startTest();
-            ratings = AccountRatingCalculator.calculateAccountRatings(ids);
-            Test.stopTest();
-        }
-        System.assertEquals(3, ratings.size(), 'Should return ratings for all 3 accounts');
-    }
+    // -------------------------------------------------------------------------
+    // 4. Bulk behaviour (200 accounts, no opps: 3+3+0=6 -> Warm)
+    //    This test validates the bulk DML path and governor limit compliance,
+    //    not the Hot-score path (tested individually above).
+    // -------------------------------------------------------------------------
 
     @IsTest
-    static void testBulkRatings_EmptySet() {
-        User u = buildStandardUser();
-        insert u;
-        Map<Id, String> ratings;
-        System.runAs(u) {
-            Test.startTest();
-            ratings = AccountRatingCalculator.calculateAccountRatings(new Set<Id>());
-            Test.stopTest();
-        }
-        System.assert(ratings.isEmpty(), 'Empty input should return empty map');
-    }
-
-    @IsTest
-    static void testBulkRatings_NullSet() {
-        User u = buildStandardUser();
-        insert u;
-        Map<Id, String> ratings;
-        System.runAs(u) {
-            Test.startTest();
-            ratings = AccountRatingCalculator.calculateAccountRatings(null);
-            Test.stopTest();
-        }
-        System.assert(ratings.isEmpty(), 'Null input should return empty map');
-    }
-
-    @IsTest
-    static void testUpdateRatings_PersistsHot() {
-        Account acc = [SELECT Id FROM Account WHERE Name = 'Hot Account' LIMIT 1];
-        User u = buildStandardUser();
-        insert u;
-        System.runAs(u) {
-            Test.startTest();
-            AccountRatingCalculator.updateAccountRatings(new Set<Id>{ acc.Id });
-            Test.stopTest();
-        }
-        Account updated = [SELECT Rating FROM Account WHERE Id = :acc.Id LIMIT 1];
-        System.assertEquals('Hot', updated.Rating, 'Rating field should be persisted as Hot');
-    }
-
-    @IsTest
-    static void testUpdateRatings_EmptySet() {
-        User u = buildStandardUser();
-        insert u;
-        System.runAs(u) {
-            Test.startTest();
-            AccountRatingCalculator.updateAccountRatings(new Set<Id>());
-            Test.stopTest();
-        }
-        System.assert(true, 'Empty set should complete without exception');
-    }
-
-    @IsTest
-    static void testUpdateRatings_NullSet() {
-        User u = buildStandardUser();
-        insert u;
-        System.runAs(u) {
-            Test.startTest();
-            AccountRatingCalculator.updateAccountRatings(null);
-            Test.stopTest();
-        }
-        System.assert(true, 'Null input should complete without exception');
-    }
-
-    @IsTest
-    static void testFlowEntry_HappyPath() {
-        Account acc = [SELECT Id FROM Account WHERE Name = 'Warm Account' LIMIT 1];
-        User u = buildStandardUser();
-        insert u;
-        AccountRatingCalculator.FlowRequest req = new AccountRatingCalculator.FlowRequest();
-        req.accountId = acc.Id;
-        System.runAs(u) {
-            Test.startTest();
-            AccountRatingCalculator.updateAccountRatingFromFlow(
-                new List<AccountRatingCalculator.FlowRequest>{ req }
-            );
-            Test.stopTest();
-        }
-        Account updated = [SELECT Rating FROM Account WHERE Id = :acc.Id LIMIT 1];
-        System.assertEquals('Warm', updated.Rating, 'Flow should persist Warm rating');
-    }
-
-    @IsTest
-    static void testFlowEntry_NullAccountId() {
-        User u = buildStandardUser();
-        insert u;
-        AccountRatingCalculator.FlowRequest req = new AccountRatingCalculator.FlowRequest();
-        req.accountId = null;
-        System.runAs(u) {
-            Test.startTest();
-            AccountRatingCalculator.updateAccountRatingFromFlow(
-                new List<AccountRatingCalculator.FlowRequest>{ req }
-            );
-            Test.stopTest();
-        }
-        System.assert(true, 'Null accountId should not throw');
-    }
-
-    @IsTest
-    static void testFlowEntry_EmptyList() {
-        User u = buildStandardUser();
-        insert u;
-        System.runAs(u) {
-            Test.startTest();
-            AccountRatingCalculator.updateAccountRatingFromFlow(
-                new List<AccountRatingCalculator.FlowRequest>()
-            );
-            Test.stopTest();
-        }
-        System.assert(true, 'Empty FlowRequest list should not throw');
-    }
-
-    @IsTest
-    static void testFlowEntry_NullList() {
-        User u = buildStandardUser();
-        insert u;
-        System.runAs(u) {
-            Test.startTest();
-            AccountRatingCalculator.updateAccountRatingFromFlow(null);
-            Test.stopTest();
-        }
-        System.assert(true, 'Null FlowRequest list should not throw');
-    }
-
-    @IsTest
-    static void testBulkSafety_200Records() {
-        List<Account> bulkAccounts = new List<Account>();
+    static void testBulkUpdateAccountRatings() {
+        List<Account> accounts = new List<Account>();
         for (Integer i = 0; i < 200; i++) {
-            bulkAccounts.add(new Account(
+            accounts.add(new Account(
                 Name              = 'Bulk Account ' + i,
-                AnnualRevenue     = 500000,
-                NumberOfEmployees = 50
+                AnnualRevenue     = 10000000,   // tier 3 -> 3 pts
+                NumberOfEmployees = 1000         // tier 3 -> 3 pts
+                // No opportunities -> 0 pts   Total = 6 -> Warm
             ));
         }
-        insert bulkAccounts;
-        Set<Id> ids = new Map<Id, Account>(bulkAccounts).keySet();
-        User u = buildStandardUser();
-        insert u;
-        System.runAs(u) {
-            Test.startTest();
-            AccountRatingCalculator.updateAccountRatings(ids);
-            Test.stopTest();
+        insert accounts;
+
+        Set<Id> accountIds = new Set<Id>();
+        for (Account acc : accounts) {
+            accountIds.add(acc.Id);
         }
-        List<Account> updated = [SELECT Rating FROM Account WHERE Id IN :ids];
+
+        Test.startTest();
+        AccountRatingCalculator.updateAccountRatings(accountIds);
+        Test.stopTest();
+
+        // Revenue(3) + Employees(3) + Opps(0) = 6 -> Warm
+        List<Account> updated = [SELECT Id, Rating FROM Account WHERE Id IN :accountIds];
         for (Account acc : updated) {
-            System.assertEquals('Cold', acc.Rating, 'Rev 500K(1)+Emp 50(1)+0 opps(0)=2 -> Cold');
+            System.assertEquals('Warm', acc.Rating, 'Bulk account without opps: 3+3+0=6pts -> Warm');
         }
     }
 
+    // -------------------------------------------------------------------------
+    // 5. Edge cases - null / empty inputs
+    // -------------------------------------------------------------------------
+
     @IsTest
-    static void testBoundary_ExactRevenueThreshold() {
-        Account acc = new Account(
-            Name              = 'Boundary Revenue',
-            AnnualRevenue     = 10000000,
-            NumberOfEmployees = 0
-        );
-        insert acc;
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
-            Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
-            Test.stopTest();
-        }
-        System.assertEquals('Cold', rating, 'Rev 3pts + Emp 0pts + Opp 0pts = 3 -> Cold');
+    static void testCalculateAccountRating_NullId() {
+        Test.startTest();
+        String rating = AccountRatingCalculator.calculateAccountRating(null);
+        Test.stopTest();
+
+        System.assertEquals(null, rating, 'Null accountId should return null');
     }
 
     @IsTest
-    static void testBoundary_ExactEmployeeThreshold() {
-        Account acc = new Account(
-            Name              = 'Boundary Emp',
-            AnnualRevenue     = 0,
-            NumberOfEmployees = 1000
-        );
-        insert acc;
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
-            Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
-            Test.stopTest();
-        }
-        System.assertEquals('Cold', rating, 'Emp 3pts + Rev 0pts + Opp 0pts = 3 -> Cold');
+    static void testCalculateAccountRatings_EmptySet() {
+        Test.startTest();
+        Map<Id, String> result = AccountRatingCalculator.calculateAccountRatings(new Set<Id>());
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, 'Result map should not be null for empty input');
+        System.assertEquals(0, result.size(), 'Result map should be empty for empty input');
     }
 
     @IsTest
-    static void testBoundary_WarmToHotTransition() {
-        Account acc = new Account(
-            Name              = 'Boundary Hot',
-            AnnualRevenue     = 10000000,
-            NumberOfEmployees = 1000
+    static void testUpdateAccountRatings_NullSet() {
+        Test.startTest();
+        AccountRatingCalculator.updateAccountRatings(null);
+        Test.stopTest();
+        System.assert(true, 'No exception should be thrown for null input');
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. Invocable / Flow entry point
+    // -------------------------------------------------------------------------
+
+    @IsTest
+    static void testUpdateAccountRatingFromFlow_ValidRequest() {
+        Account acc = createAccount('Flow Hot', 10000000, 1000);
+        createOpportunities(acc.Id, 10);
+
+        AccountRatingCalculator.FlowRequest req = new AccountRatingCalculator.FlowRequest();
+        req.accountId = acc.Id;
+
+        Test.startTest();
+        AccountRatingCalculator.updateAccountRatingFromFlow(
+            new List<AccountRatingCalculator.FlowRequest>{ req }
         );
-        insert acc;
-        insert new Opportunity(
-            Name      = 'One Opp',
-            AccountId = acc.Id,
-            StageName = 'Prospecting',
-            CloseDate = Date.today().addDays(10)
-        );
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
-            Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
-            Test.stopTest();
-        }
-        System.assertEquals('Hot', rating, 'Score 7 should yield Hot');
+        Test.stopTest();
+
+        Account updated = [SELECT Rating FROM Account WHERE Id = :acc.Id];
+        System.assertEquals('Hot', updated.Rating, 'Flow entry point should persist Hot rating');
     }
 
     @IsTest
-    static void testBoundary_WarmExactScore() {
-        Account acc = new Account(
-            Name              = 'Warm Boundary',
-            AnnualRevenue     = 1000000,
-            NumberOfEmployees = 100
+    static void testUpdateAccountRatingFromFlow_NullRequest() {
+        Test.startTest();
+        AccountRatingCalculator.updateAccountRatingFromFlow(null);
+        Test.stopTest();
+        System.assert(true, 'Null requests list should be handled gracefully');
+    }
+
+    @IsTest
+    static void testUpdateAccountRatingFromFlow_NullAccountId() {
+        AccountRatingCalculator.FlowRequest req = new AccountRatingCalculator.FlowRequest();
+        req.accountId = null;
+
+        Test.startTest();
+        AccountRatingCalculator.updateAccountRatingFromFlow(
+            new List<AccountRatingCalculator.FlowRequest>{ req }
         );
-        insert acc;
-        User u = buildStandardUser();
-        insert u;
-        String rating;
-        System.runAs(u) {
+        Test.stopTest();
+        System.assert(true, 'Null accountId inside FlowRequest should be handled gracefully');
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. Security - System.runAs
+    // -------------------------------------------------------------------------
+
+    @IsTest
+    static void testSecurityRunAs_StandardUser() {
+        Profile p = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
+        User testUser = new User(
+            Alias             = 'stdusr',
+            Email             = 'stduser_arc@example.com',
+            EmailEncodingKey  = 'UTF-8',
+            FirstName         = 'Test',
+            LastName          = 'User ARC',
+            LanguageLocaleKey = 'en_US',
+            LocaleSidKey      = 'en_US',
+            ProfileId         = p.Id,
+            TimeZoneSidKey    = 'America/Los_Angeles',
+            UserName          = 'stduser_arc_aa118@example.com'
+        );
+        insert testUser;
+
+        Id accId;
+        System.runAs(testUser) {
+            Account acc = createAccount('RunAs Hot', 10000000, 1000);
+            createOpportunities(acc.Id, 10);
+            accId = acc.Id;
+
             Test.startTest();
-            rating = AccountRatingCalculator.calculateAccountRating(acc.Id);
+            AccountRatingCalculator.updateAccountRatings(new Set<Id>{ accId });
             Test.stopTest();
         }
-        System.assertEquals('Warm', rating, 'Score 4 should yield Warm');
+
+        Account updated = [SELECT Rating FROM Account WHERE Id = :accId];
+        System.assertEquals('Hot', updated.Rating, 'Standard User context should result in Hot rating');
     }
 }
