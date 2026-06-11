@@ -155,7 +155,7 @@
     <externalSharingModel>Private</externalSharingModel>
     <label>Bicycle</label>
     <nameField>
-        <displayFormat>BIC-{00000}</displayFormat>
+        <displayFormat>BIC-{0000}</displayFormat>
         <label>Bicycle Name</label>
         <type>AutoNumber</type>
     </nameField>
