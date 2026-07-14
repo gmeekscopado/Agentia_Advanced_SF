@@ -25,11 +25,15 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Copado_External_ID__c</field>
+                <field>Black_Card_Member__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Black_Card_Member__c</field>
+                <field>First_Contact__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>DevOps_Experience__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>

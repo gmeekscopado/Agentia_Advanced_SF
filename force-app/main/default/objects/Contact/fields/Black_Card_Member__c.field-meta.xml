@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Black_Card_Member__c</fullName>
-    <defaultValue>false</defaultValue>
-    <description>Use this field to indicate if the contact is the holder of a Black Card.</description>
+    <defaultValue>true</defaultValue>
+    <description>Use this field to indicate if the Contact holds a Black Card membership.</description>
     <label>Black Card Member</label>
     <trackFeedHistory>false</trackFeedHistory>
     <type>Checkbox</type>
