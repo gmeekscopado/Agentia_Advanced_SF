@@ -2,71 +2,29 @@
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>62.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
-    <assignments>
-        <name>Set_Tier_1</name>
-        <label>Set Tier 1</label>
-        <locationX>352</locationX>
-        <locationY>278</locationY>
-        <assignmentItems>
-            <assignToReference>$Record.Price_Tier__c</assignToReference>
-            <operator>Assign</operator>
-            <value>
-                <stringValue>Tier 1</stringValue>
-            </value>
-        </assignmentItems>
-    </assignments>
-    <assignments>
-        <name>Set_Tier_2</name>
-        <label>Set Tier 2</label>
-        <locationX>176</locationX>
-        <locationY>278</locationY>
-        <assignmentItems>
-            <assignToReference>$Record.Price_Tier__c</assignToReference>
-            <operator>Assign</operator>
-            <value>
-                <stringValue>Tier 2</stringValue>
-            </value>
-        </assignmentItems>
-    </assignments>
-    <assignments>
-        <name>Set_Tier_3</name>
-        <label>Set Tier 3</label>
-        <locationX>0</locationX>
-        <locationY>278</locationY>
-        <assignmentItems>
-            <assignToReference>$Record.Price_Tier__c</assignToReference>
-            <operator>Assign</operator>
-            <value>
-                <stringValue>Tier 3</stringValue>
-            </value>
-        </assignmentItems>
-    </assignments>
     <decisions>
         <name>Check_Price_Tier</name>
         <label>Check Price Tier</label>
         <locationX>176</locationX>
         <locationY>134</locationY>
-        <defaultConnector>
-            <targetReference>Set_Tier_1</targetReference>
-        </defaultConnector>
-        <defaultConnectorLabel>Price &gt;= $1000 (Tier 1)</defaultConnectorLabel>
+        <defaultConnectorLabel>Default Outcome</defaultConnectorLabel>
         <rules>
-            <name>Price_Below_500</name>
+            <name>Tier_1</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
                 <leftValueReference>$Record.Price__c</leftValueReference>
-                <operator>LessThan</operator>
+                <operator>GreaterThanOrEqualTo</operator>
                 <rightValue>
-                    <numberValue>500.0</numberValue>
+                    <numberValue>1000.0</numberValue>
                 </rightValue>
             </conditions>
             <connector>
-                <targetReference>Set_Tier_3</targetReference>
+                <targetReference>Set_Tier_1</targetReference>
             </connector>
-            <label>Price &lt; $500 (Tier 3)</label>
+            <label>Tier 1 (&gt;= $1000)</label>
         </rules>
         <rules>
-            <name>Price_500_to_999</name>
+            <name>Tier_2</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
                 <leftValueReference>$Record.Price__c</leftValueReference>
@@ -85,7 +43,22 @@
             <connector>
                 <targetReference>Set_Tier_2</targetReference>
             </connector>
-            <label>Price $500-$999 (Tier 2)</label>
+            <label>Tier 2 ($500 - $999)</label>
+        </rules>
+        <rules>
+            <name>Tier_3</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>$Record.Price__c</leftValueReference>
+                <operator>LessThan</operator>
+                <rightValue>
+                    <numberValue>500.0</numberValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Set_Tier_3</targetReference>
+            </connector>
+            <label>Tier 3 (less than $500)</label>
         </rules>
     </decisions>
     <label>Bicycle Price Tier Flow</label>
@@ -95,22 +68,63 @@
             <stringValue>LightningFlowBuilder</stringValue>
         </value>
     </processMetadataValues>
-    <processMetadataValues>
-        <name>CanvasMode</name>
-        <value>
-            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
-        </value>
-    </processMetadataValues>
     <processType>AutoLaunchedFlow</processType>
+    <recordUpdates>
+        <name>Set_Tier_1</name>
+        <label>Set Tier 1</label>
+        <locationX>0</locationX>
+        <locationY>268</locationY>
+        <inputAssignments>
+            <field>Price_Tier__c</field>
+            <value>
+                <stringValue>Tier 1</stringValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Set_Tier_2</name>
+        <label>Set Tier 2</label>
+        <locationX>176</locationX>
+        <locationY>268</locationY>
+        <inputAssignments>
+            <field>Price_Tier__c</field>
+            <value>
+                <stringValue>Tier 2</stringValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
+    <recordUpdates>
+        <name>Set_Tier_3</name>
+        <label>Set Tier 3</label>
+        <locationX>352</locationX>
+        <locationY>268</locationY>
+        <inputAssignments>
+            <field>Price_Tier__c</field>
+            <value>
+                <stringValue>Tier 3</stringValue>
+            </value>
+        </inputAssignments>
+        <inputReference>$Record</inputReference>
+    </recordUpdates>
     <start>
         <locationX>176</locationX>
         <locationY>0</locationY>
         <connector>
             <targetReference>Check_Price_Tier</targetReference>
         </connector>
+        <filterLogic>or</filterLogic>
+        <filters>
+            <field>Price__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
         <object>Bicycle__c</object>
         <recordTriggerType>CreateAndUpdate</recordTriggerType>
-        <triggerType>RecordBeforeSave</triggerType>
+        <triggerType>RecordAfterSave</triggerType>
     </start>
     <status>Active</status>
 </Flow>
