@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!--
+        Account_Rating_Threshold_Message
+        ================================
+        This label is referenced directly in AccountRatingService.cls.
+        It surfaces a user-facing advisory when an Account score sits on
+        a rating boundary (e.g., exactly at the Warm threshold).
+
+        ⚠️  DEPENDENCY ALERT:
+        Modifying the value of this label in isolation (without coordinating
+        with the AccountRatingService class in Branch A) may cause runtime
+        messages to be inconsistent or misleading in production.
+        Both branches MUST be deployed together to maintain integrity.
+    -->
+    <labels>
+        <fullName>Account_Rating_Threshold_Message</fullName>
+        <categories>AccountRating</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Account Rating Threshold Advisory Message</shortDescription>
+        <value>Account score is at a rating boundary. Please review revenue and headcount data before finalising the rating. Scores between 4 and 7 are classified as Warm; ensure all opportunity data is up to date.</value>
+    </labels>
+</CustomLabels>
