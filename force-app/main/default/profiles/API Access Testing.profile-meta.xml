@@ -663,11 +663,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Bicycle__c.Price_Tier__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
         <field>BusinessBrand.OrgId</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -5205,15 +5200,8 @@
         <enabled>false</enabled>
         <flow>Account_Health_Score_Daily_Update</flow>
     </flowAccesses>
-    <flowAccesses>
-        <enabled>false</enabled>
-        <flow>Bicycle_Price_Tier_Flow</flow>
-    </flowAccesses>
     <layoutAssignments>
         <layout>AsyncOperationLog-Async Operation Log Layout</layout>
-    </layoutAssignments>
-    <layoutAssignments>
-        <layout>Bicycle__c-Bicycle Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
         <layout>CalcMatrixColumnRange-Decision Matrix Column Range Layout</layout>

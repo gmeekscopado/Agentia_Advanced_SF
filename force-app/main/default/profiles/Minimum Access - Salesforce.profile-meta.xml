@@ -662,11 +662,6 @@
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
-        <field>Bicycle__c.Price_Tier__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
         <editable>true</editable>
         <field>BusinessBrand.OrgId</field>
         <readable>true</readable>
@@ -5205,10 +5200,6 @@
         <enabled>false</enabled>
         <flow>Account_Health_Score_Daily_Update</flow>
     </flowAccesses>
-    <flowAccesses>
-        <enabled>false</enabled>
-        <flow>Bicycle_Price_Tier_Flow</flow>
-    </flowAccesses>
     <layoutAssignments>
         <layout>ActionPlanItemDependency-Action Plan Item Dependency Layout</layout>
     </layoutAssignments>
@@ -5244,9 +5235,6 @@
     </layoutAssignments>
     <layoutAssignments>
         <layout>AuthorizationFormText-Authorization Form Text Layout</layout>
-    </layoutAssignments>
-    <layoutAssignments>
-        <layout>Bicycle__c-Bicycle Layout</layout>
     </layoutAssignments>
     <layoutAssignments>
         <layout>BusinessBrand-Business Brand Layout</layout>
