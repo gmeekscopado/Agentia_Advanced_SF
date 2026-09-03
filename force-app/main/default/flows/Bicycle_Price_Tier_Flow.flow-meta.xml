@@ -3,9 +3,8 @@
     <apiVersion>62.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <assignments>
-        <description>Assigns Price Tier = Tier 1 when Price is $1,000 or more.</description>
         <name>Assign_Tier_1</name>
-        <label>Set Price Tier to Tier 1</label>
+        <label>Assign Tier 1</label>
         <locationX>0</locationX>
         <locationY>240</locationY>
         <assignmentItems>
@@ -17,9 +16,8 @@
         </assignmentItems>
     </assignments>
     <assignments>
-        <description>Assigns Price Tier = Tier 2 when Price is between $500 and $999.99.</description>
         <name>Assign_Tier_2</name>
-        <label>Set Price Tier to Tier 2</label>
+        <label>Assign Tier 2</label>
         <locationX>176</locationX>
         <locationY>240</locationY>
         <assignmentItems>
@@ -31,9 +29,8 @@
         </assignmentItems>
     </assignments>
     <assignments>
-        <description>Assigns Price Tier = Tier 3 when Price is below $500.</description>
         <name>Assign_Tier_3</name>
-        <label>Set Price Tier to Tier 3</label>
+        <label>Assign Tier 3</label>
         <locationX>352</locationX>
         <locationY>240</locationY>
         <assignmentItems>
@@ -45,17 +42,16 @@
         </assignmentItems>
     </assignments>
     <decisions>
-        <description>Evaluates the Price__c field value and routes to the correct tier assignment.</description>
-        <name>Decision_Price_Tier</name>
-        <label>Determine Price Tier</label>
+        <name>Decide_Price_Tier</name>
+        <label>Decide Price Tier</label>
         <locationX>176</locationX>
         <locationY>120</locationY>
         <defaultConnector>
             <targetReference>Assign_Tier_3</targetReference>
         </defaultConnector>
-        <defaultConnectorLabel>Price Below $500 (Tier 3)</defaultConnectorLabel>
+        <defaultConnectorLabel>Less Than $500 (Tier 3)</defaultConnectorLabel>
         <rules>
-            <name>Rule_Tier_1</name>
+            <name>Is_Tier_1</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
                 <leftValueReference>$Record.Price__c</leftValueReference>
@@ -70,7 +66,7 @@
             <label>Price &gt;= $1,000 (Tier 1)</label>
         </rules>
         <rules>
-            <name>Rule_Tier_2</name>
+            <name>Is_Tier_2</name>
             <conditionLogic>and</conditionLogic>
             <conditions>
                 <leftValueReference>$Record.Price__c</leftValueReference>
@@ -82,31 +78,25 @@
             <connector>
                 <targetReference>Assign_Tier_2</targetReference>
             </connector>
-            <label>Price &gt;= $500 and Below $1,000 (Tier 2)</label>
+            <label>Price &gt;= $500 (Tier 2)</label>
         </rules>
     </decisions>
-    <description>Record-triggered Flow that auto-populates the Price Tier field on Bicycle__c records based on the Price field value. Fires on Create and Update. Implements AA-133 tier logic: Tier 3 (under $500), Tier 2 ($500-$999.99), Tier 1 ($1000+).</description>
-    <interviewLabel>Bicycle Price Tier Flow {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Bicycle Price Tier Flow</label>
-    <processMetadataValues>
-        <name>BuilderType</name>
-        <value>
-            <stringValue>LightningFlowBuilder</stringValue>
-        </value>
-    </processMetadataValues>
-    <processMetadataValues>
-        <name>CanvasMode</name>
-        <value>
-            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
-        </value>
-    </processMetadataValues>
     <processType>AutoLaunchedFlow</processType>
     <start>
         <locationX>176</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Decision_Price_Tier</targetReference>
+            <targetReference>Decide_Price_Tier</targetReference>
         </connector>
+        <filterLogic>1</filterLogic>
+        <filters>
+            <field>Price__c</field>
+            <operator>IsChanged</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
         <object>Bicycle__c</object>
         <recordTriggerType>CreateAndUpdate</recordTriggerType>
         <triggerType>RecordBeforeSave</triggerType>

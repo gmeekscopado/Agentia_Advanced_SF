@@ -2,7 +2,7 @@
 <ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Price_Not_Zero</fullName>
     <active>true</active>
-    <description>Prevents saving a Bicycle record when the Price field is $0. Displays a field-level error message. Created for AA-133.</description>
+    <description>Prevents saving a Bicycle record with a Price of $0.</description>
     <errorConditionFormula>Price__c = 0</errorConditionFormula>
     <errorDisplayField>Price__c</errorDisplayField>
     <errorMessage>Price cannot be $0.</errorMessage>
