@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Calculate_Account_Rating</name>
+        <label>Calculate Account Rating</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <actionName>AccountRatingCalculator</actionName>
+        <actionType>apex</actionType>
+        <flowTransactionModel>CurrentTransaction</flowTransactionModel>
+        <inputParameters>
+            <name>accountId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>AccountRatingCalculator</nameSegment>
+    </actionCalls>
+    <apiVersion>60.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <description>Automatically recalculates and updates Account Rating (Hot/Warm/Cold) after save when the Account is created, or when Annual Revenue or Number of Employees changes. Calls AccountRatingCalculator.updateAccountRatingFromFlow in the same transaction as the record save.</description>
+    <interviewLabel>Account Rating Calculator {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Account Rating Calculator</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Calculate_Account_Rating</targetReference>
+        </connector>
+        <filterFormula>OR(ISNEW(), ISCHANGED({!$Record.AnnualRevenue}), ISCHANGED({!$Record.NumberOfEmployees}))</filterFormula>
+        <object>Account</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <status>Active</status>
+</Flow>
