@@ -168,11 +168,6 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>Account.Health_Score__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
         <field>Account.Industry</field>
         <readable>false</readable>
     </fieldPermissions>
@@ -5256,10 +5251,6 @@
         <field>WorkStepTemplate.IsActive</field>
         <readable>false</readable>
     </fieldPermissions>
-    <flowAccesses>
-        <enabled>false</enabled>
-        <flow>Account_Health_Score_Daily_Update</flow>
-    </flowAccesses>
     <layoutAssignments>
         <layout>AsyncOperationLog-Async Operation Log Layout</layout>
     </layoutAssignments>

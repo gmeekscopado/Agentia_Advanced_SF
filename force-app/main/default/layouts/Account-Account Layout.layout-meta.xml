@@ -41,12 +41,7 @@
         <detailHeading>true</detailHeading>
         <editHeading>true</editHeading>
         <label>Account Health</label>
-        <layoutColumns>
-            <layoutItems>
-                <behavior>Readonly</behavior>
-                <field>Health_Score__c</field>
-            </layoutItems>
-        </layoutColumns>
+        <layoutColumns/>
         <layoutColumns/>
         <style>TwoColumnsTopToBottom</style>
     </layoutSections>

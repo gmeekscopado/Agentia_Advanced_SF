@@ -3,7 +3,6 @@
     <fullName>Account_Health_Score_Compact</fullName>
     <fields>Name</fields>
     <fields>Phone</fields>
-    <fields>Health_Score__c</fields>
     <fields>AnnualRevenue</fields>
     <fields>Type</fields>
     <label>Account Health Score Compact</label>
