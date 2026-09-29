@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Price_Tier__c</fullName>
-    <description>Automatically set by the Bicycle Price Tier Flow based on the Price field. Not intended for manual entry.</description>
+    <description>Automatically calculated pricing tier based on the bicycle&apos;s price.</description>
     <label>Price Tier</label>
     <required>false</required>
     <trackTrending>false</trackTrending>
