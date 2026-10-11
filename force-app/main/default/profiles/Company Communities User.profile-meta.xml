@@ -6250,6 +6250,10 @@
         <visibility>DefaultOn</visibility>
     </tabVisibilities>
     <tabVisibilities>
+        <tab>standard-DevopsDeployComponent</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
         <tab>standard-DevopsEnvDeployment</tab>
         <visibility>DefaultOn</visibility>
     </tabVisibilities>

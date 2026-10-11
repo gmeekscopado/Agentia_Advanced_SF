@@ -5742,6 +5742,10 @@
         <visibility>Hidden</visibility>
     </tabVisibilities>
     <tabVisibilities>
+        <tab>standard-DevopsDeployComponent</tab>
+        <visibility>Hidden</visibility>
+    </tabVisibilities>
+    <tabVisibilities>
         <tab>standard-DigitalWallet</tab>
         <visibility>Hidden</visibility>
     </tabVisibilities>
