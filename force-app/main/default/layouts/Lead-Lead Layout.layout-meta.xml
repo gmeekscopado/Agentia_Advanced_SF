@@ -23,11 +23,19 @@
                 <behavior>Edit</behavior>
                 <field>Title</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>VIP__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
                 <behavior>Required</behavior>
                 <field>Status</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>FEHB_Eligibility_Category__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>

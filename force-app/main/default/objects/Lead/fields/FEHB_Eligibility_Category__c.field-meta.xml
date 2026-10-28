@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>FEHB_Eligibility_Category__c</fullName>
+    <label>FEHB Eligibility Category</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Active Federal Employee</fullName>
+                <default>false</default>
+                <label>Active Federal Employee</label>
+            </value>
+            <value>
+                <fullName>Postal Employee</fullName>
+                <default>false</default>
+                <label>Postal Employee</label>
+            </value>
+            <value>
+                <fullName>Federal Retiree</fullName>
+                <default>false</default>
+                <label>Federal Retiree</label>
+            </value>
+            <value>
+                <fullName>Uniformed Services</fullName>
+                <default>false</default>
+                <label>Uniformed Services</label>
+            </value>
+            <value>
+                <fullName>Survivor or Family Member</fullName>
+                <default>false</default>
+                <label>Survivor or Family Member</label>
+            </value>
+            <value>
+                <fullName>Other</fullName>
+                <default>false</default>
+                <label>Other</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Eligibility_Required_When_Qualified</fullName>
+    <active>true</active>
+    <description>Requires an FEHB Eligibility Category when Lead Status is Qualified.</description>
+    <errorConditionFormula>AND(ISPICKVAL(Status, &quot;Qualified&quot;), ISPICKVAL(FEHB_Eligibility_Category__c, &quot;&quot;))</errorConditionFormula>
+    <errorDisplayField>FEHB_Eligibility_Category__c</errorDisplayField>
+    <errorMessage>Select an FEHB Eligibility Category before qualifying this lead.</errorMessage>
+</ValidationRule>
