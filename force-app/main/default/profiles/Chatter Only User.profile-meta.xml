@@ -2648,6 +2648,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Lead.FEHB_Eligibility_Category__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Lead.Fax</field>
         <readable>false</readable>
     </fieldPermissions>
